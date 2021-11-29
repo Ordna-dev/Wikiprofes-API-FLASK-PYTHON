@@ -1,7 +1,7 @@
 from flask import Flask, json, request, redirect, render_template, jsonify
 from API.Usuario.tablaUsuario import crearUsuario
 from API.Materia.tablaMateria import registrarMateria
-from API.Maestro.tablaProfesor import crearProfesor, getProfesores
+from API.Maestro.tablaProfesor import crearProfesor, getProfesores, buscarProfesor
 from flask.helpers import url_for
 from main import app
 import psycopg2
@@ -86,10 +86,10 @@ def materiasRegistro():
         except:
             return jsonify({"Code:": "Input error"})
 
-#toy probando, deja ajustarlo en donde debe ir, este era el utlimo que andaba haciendo antier
+#toy probando, deja ajustarlo en donde debe ir
 # ?
 @app.route('/api/registrarProfesor', methods = ['POST', 'GET'])
-def registrarProfesor():
+def registrarProfesor(id=None):
     if request.method == "POST" and request.is_json:
         try:
             data = request.get_json() 
@@ -101,8 +101,23 @@ def registrarProfesor():
         except:
             return jsonify({"code" : "Input error"})
 
-    elif request.method == "GET":
+    elif request.method == "GET" and id == None:
         return jsonify(getProfesores())
+
+@app.route('/api/search', methods = ['GET'])
+def busquedaPorPatron():
+    if request.method == "GET":
+        try:
+            data = request.get_json()
+            patron = data['patron']
+            maestros = []
+            maestros = buscarProfesor(patron)
+            if maestros:
+                return jsonify(maestros)
+            else:
+                return jsonify({"result": "sin coincidencia"})
+        except:
+            return jsonify({"code": "Input error"})
 
 @app.route('/api/acerca.html')
 def paginaAcerca():

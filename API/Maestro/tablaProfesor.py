@@ -12,29 +12,47 @@ def crearProfesor(nombre, apellidos):
    if existeProfesor(nombre, apellidos) == True:
        return False
    else:
-       insertar = "INSERT INTO maestro.maestros (promedio_conocimiento, promedio_puntualidad, promedio_dificultad, centro_universitario, nombre, apellidos) VALUES(%s, %s, %s, %s, %s, %s)"
-       cursor.execute(insertar, ('0', '0', '', '0', 'CUECI', '', nombre, apellidos))
-       bd.commit() 
-       if cursor.rowcount:
+        insertar = "INSERT INTO maestro.maestros (promedio_conocimiento, promedio_puntualidad, promedio_dificultad, numero_evaluaciones, centro_universitario, nombre, apellidos, id_usuario) VALUES(%s, %s, %s, %s, %s, %s, %s, %s)"
+        cursor.execute(insertar, (None, None, None, '0', 'CUECI',nombre, apellidos, None))
+        bd.commit() 
+        if cursor.rowcount:
             return True
-       else:
+        else:
             return False
 
 def getProfesores():
-     query = "SELECT id_usuario, promedio_conocimiento, promedio_puntualidad, promedio_dificultad, centro_universitario FROM maestro.maestros"
+     query = "SELECT nombre, apellidos, promedio_conocimiento, promedio_puntualidad, promedio_dificultad, centro_universitario FROM maestro.maestros"
      cursor.execute(query)
      maestros = []
      for row in cursor.fetchall():
          maestro = {
-             'id_maestro': row[0],
-             'promedio_conocimiento': row[1],                           #Obtener informacion de todos los profesores registrados.
-             'promedio_puntualidad': row[2],                              
-             'promedio_dificultad': row[3],
-             'centro universitario': row[4]
+             'nombre': row[0],
+             'apellidos': row[1],
+             'promedio_conocimiento': row[2],                           #Obtener informacion de todos los profesores registrados.
+             'promedio_puntualidad': row[3],                              
+             'promedio_dificultad': row[4],
+             'centro_universitario': row[5]
          }
          maestros.append(maestro)
      return maestros
 
+def buscarProfesor(patron):
+    query = "SELECT * FROM maestro.maestros WHERE nombre || ' ' || apellidos LIKE %s"
+    cursor.execute(query, ('%'+patron+'%',))
+    maestros = []
+    for row in cursor.fetchall():
+         maestro = {
+            'promedio_conocimiento': row[1],                           #Obtener informacion de todos los profesores registrados.
+            'promedio_puntualidad': row[2],                              
+            'promedio_dificultad': row[3],
+            'numero_evaluciones': row[4],
+            'centro_universitario': row[5],
+            'nombre': row[6],
+            'apellidos': row[7],
+            'id_usuario': row[8]
+         }
+         maestros.append(maestro)
+    return maestros
 
 # def iniciarSesionProfesor(correo, contra):
 #     h = hashlib.new("sha256", bytes(contra, "utf-8"))

@@ -20,9 +20,7 @@ def crearUsuario(nombreUsuario, correo, key):
         fechaRegistro = date.today()
         horaRegistro = datetime.now().time()  
         insertar = "INSERT INTO usuario.usuarios (nombre, apellidos,nombre_usuario, acces_key, fecha, hora, correo_electronico) VALUES(%s, %s, %s, %s, %s, %s, %s)"
-        nombre = None
-        apellidos = None
-        cursor.execute(insertar, (nombre, apellidos, nombreUsuario, h, fechaRegistro, horaRegistro, correo))
+        cursor.execute(insertar, (None, None, nombreUsuario, h, fechaRegistro, horaRegistro, correo)) 
         bd.commit()
 
         if cursor.rowcount:
