@@ -54,6 +54,25 @@ def buscarProfesor(patron):
          maestros.append(maestro)
     return maestros
 
+def consultarMaestro(id):
+    query = "SELECT * FROM maestro.maestros WHERE id_maestro = %s"
+    cursor.execute(query, (id,))
+    maestros = []
+    for row in cursor.fetchall():
+        maestro = {
+        'promedio_conocimiento': row[1],                           #Obtener informacion de todos los profesores registrados.
+        'promedio_puntualidad': row[2],                              
+        'promedio_dificultad': row[3],
+        'numero_evaluciones': row[4],
+        'centro_universitario': row[5],
+        'nombre': row[6],
+        'apellidos': row[7],
+        'id_usuario': row[8]
+        }
+        maestros.append(maestro)
+    return maestros
+
+
 # def iniciarSesionProfesor(correo, contra):
 #     h = hashlib.new("sha256", bytes(contra, "utf-8"))
 #     h = h.hexdigest()

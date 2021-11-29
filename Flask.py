@@ -1,7 +1,9 @@
 from flask import Flask, json, request, redirect, render_template, jsonify
 from API.Usuario.tablaUsuario import crearUsuario
 from API.Materia.tablaMateria import registrarMateria
-from API.Maestro.tablaProfesor import crearProfesor, getProfesores, buscarProfesor
+from API.Maestro.tablaProfesor import crearProfesor, getProfesores, buscarProfesor, consultarMaestro
+from API.Maestro.tablaComenterio import insertarComentario, consultarComentarios
+from API.Materia.tablaMateria import consultarMateria
 from flask.helpers import url_for
 from main import app
 import psycopg2
@@ -63,8 +65,8 @@ def login():
     return render_template('index.html', msg=msg)
 
 # ?
-@app.route('/api/logout.html')
-def logout():
+@app.route('/api/usuarios/<int:id>/logout.html')
+def logout(id):
     sesion = [ ]
     sesion.pop('logeado', None)
     sesion.pop('Id_usuario', None)
@@ -86,8 +88,7 @@ def materiasRegistro():
         except:
             return jsonify({"Code:": "Input error"})
 
-#toy probando, deja ajustarlo en donde debe ir
-# ?
+#probado
 @app.route('/api/registrarProfesor', methods = ['POST', 'GET'])
 def registrarProfesor(id=None):
     if request.method == "POST" and request.is_json:
@@ -104,6 +105,8 @@ def registrarProfesor(id=None):
     elif request.method == "GET" and id == None:
         return jsonify(getProfesores())
 
+#probado
+@app.route('/api/usuarios/<int:id>/search', methods = ['GET']) #este seria para cuando se este logeado
 @app.route('/api/search', methods = ['GET'])
 def busquedaPorPatron():
     if request.method == "GET":
@@ -118,6 +121,54 @@ def busquedaPorPatron():
                 return jsonify({"result": "sin coincidencia"})
         except:
             return jsonify({"code": "Input error"})
+
+#probado
+@app.route('/api/maestros/<int:id>', methods = ['GET'])
+def recuperarMaestro(id):
+    if request.method == "GET":
+        try:
+            maestro = consultarMaestro(id)
+            if maestro:
+                return jsonify(maestro)
+            else:
+                return jsonify({"code": "sin coincidencia"}) 
+        except:
+            return jsonify({"code": "Error desconocido"})
+
+#probado
+@app.route('/api/usuarios/<int:id_usuario>/maestros/<int:id_maestro>/comentarios', methods = ['POST'])
+def realizarComentario(id_usuario, id_maestro):
+    if request.method == "POST":
+        try:
+            data = request.get_json()
+            anonimo = data['anonimo']
+            comentario = data['comentario']
+            id_materia = data['id_materia']
+            caso, resultado = insertarComentario(id_usuario, id_maestro, anonimo, comentario, id_materia)
+            if caso == None and resultado == True:
+                return jsonify({"code":"ok"})
+            elif resultado == False:
+                if caso == 1:
+                    return jsonify({"code":"El profesor no imparte la materia"})
+                elif caso == 2:
+                    return jsonify({"code":"Se ha comentado previamente"})
+                elif caso == 3:
+                    return jsonify({"code":"Desconocido"})
+        except:
+            return jsonify({"code":"input error"})
+
+@app.route('/api/maestros/<int:id>/comentarios', methods = ['GET'])
+def comentariosProfesor(id_maestro):
+    if request.method == "GET":
+        comentarios = consultarComentarios(id_maestro)
+        if comentarios: 
+            nombre_materia = consultarMateria(comentarios["id_materia"])
+            comentarios["nombre_materia"] = nombre_materia
+            return jsonify(comentarios)
+
+    return jsonify({"code": "error consulta"})
+
+
 
 @app.route('/api/acerca.html')
 def paginaAcerca():
