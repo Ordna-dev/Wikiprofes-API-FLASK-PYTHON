@@ -31,14 +31,13 @@ def crearUsuario(nombreUsuario, correo, key):
 def iniciarSesionUsuario(correo, contra):
     h = hashlib.new("sha256", bytes(contra, "utf-8"))
     h = h.hexdigest()
-    query = "SELECT id FROM usuario WHERE Correo_electronico = %s AND Key = %s"
+    query = "SELECT id_usuario FROM usuario.usuarios WHERE correo_electronico = %s AND acces_key = %s"
     cursor.execute(query, (correo, h))
-    id = cursor.fetchone()                            #Ta bien
+    id = cursor.fetchone()                            
     if id:                                            #Inicio de sesion del usuario mediante correo y contraseña
         return id[0], True                  
     else:
         return None, False
-
 
 def add_evaluar_maestro(evaluación): #Pusiste en el codigo SQL el acento?
     Promedio_conocimiento = evaluación['conocimiento']

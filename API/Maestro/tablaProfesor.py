@@ -13,7 +13,7 @@ def crearProfesor(nombre, apellidos):
        return False
    else:
         insertar = "INSERT INTO maestro.maestros (promedio_conocimiento, promedio_puntualidad, promedio_dificultad, numero_evaluaciones, centro_universitario, nombre, apellidos, id_usuario) VALUES(%s, %s, %s, %s, %s, %s, %s, %s)"
-        cursor.execute(insertar, (None, None, None, '0', 'CUECI',nombre, apellidos, None))
+        cursor.execute(insertar, (None, None, None, '0', 'CUCEI', nombre, apellidos, None))
         bd.commit() 
         if cursor.rowcount:
             return True

@@ -1,5 +1,5 @@
 from flask import Flask, json, request, redirect, render_template, jsonify
-from API.Usuario.tablaUsuario import crearUsuario
+from API.Usuario.tablaUsuario import crearUsuario, iniciarSesionUsuario
 from API.Materia.tablaMateria import registrarMateria
 from API.Maestro.tablaProfesor import crearProfesor, getProfesores, buscarProfesor, consultarMaestro
 from API.Maestro.tablaComenterio import insertarComentario, consultarComentarios
@@ -20,61 +20,38 @@ def registrar():
         return render_template('registro.html')
     if request.method == "POST":
         try:
-            # nombreUsuario = request.form["nombreUsuario"]
-            # correo = request.form["correo"]                           #Redireccionar al registro
-            # key = request.form["pass"]
-            # keyConfirm = request.form["repass"]
             data = request.get_json()
             nombreUsuario = data["nombreUsuario"]
-            correo = data["correo"]                           #Redireccionar al registro
+            correo = data["correo"]                           
             key = data["pass"]
             keyConfirm = data["repass"]
             if key == keyConfirm:
                 if crearUsuario(nombreUsuario, correo, key) == False:
                     return jsonify({"code": "singin error"})
                 return jsonify({"code" : "Ok"})
-                # return render_template('index.html') comentado para realizar pruebas
         except:
             return jsonify({"Code:": "Input error"})
-            # return render_template('registro.html') comentado para realizar pruebas
 
-# ?
-@app.route('/api/login.html', methods=['GET', 'POST'])
+@app.route('/api/login', methods=['POST'])
 def login():
-    if request.method == 'POST' and 'correo_electronico' in request.form and 'key' in request.form:
-        correo_electronico = request.form['correo_electronico']
-        key = request.form['key']
+    if request.method == 'POST' and request.is_json:
+        try:
+            data = request.get_json()
+            correo = data['correo_electronico']
+            contra = data['acces_key']
+            id, ok = iniciarSesionUsuario(correo, contra)
+            if ok:
+                return jsonify({"code": "ok", "id": id})
+            else:
+                return jsonify({"code": "noexiste"})
+        except:
+            return jsonify({"code": "error"})
 
-        cursor = psycopg2.cursor(psycopg2.cursors.DictCursor)
-        cursor.execute('SELECT * FROM usuario WHERE correo_electronico = %s AND key = %s', (correo_electronico, key,))
-        cuenta = cursor.fetchone()
+@app.route('/api/logout', methods=['UNLOCK'])
+def logout():
+    if request.method == 'UNLOCK':
+        return jsonify({"Code:": "Saliste de tu cuenta"})
 
-        if cuenta:
-            sesion = []
-            sesion['logeado'] = True
-            sesion['id'] = cuenta['Id_usuario'] 
-            #Se muestran como advertencia porque actuan como cookies, /r segun yo se muestra como advernencia porque no decias que era un dicccionario
-            #puede que este mal la neta no lo se si es así quita mi declaración, pd: no se que sea una cookie
-            sesion['correo_electronico'] = cuenta['correo_electronico']
-
-            return 'Inicio de sesión exitoso!'
-        
-        else:
-            msg = "Contraseña/Correo incorrectos"
-
-    return render_template('index.html', msg=msg)
-
-# ?
-@app.route('/api/usuarios/<int:id>/logout.html')
-def logout(id):
-    sesion = [ ]
-    sesion.pop('logeado', None)
-    sesion.pop('Id_usuario', None)
-    sesion.pop('correo_electronico', None)
-
-    return redirect(url_for('login'))
-
-#probado
 @app.route('/api/registrarMateria', methods = ['POST'])
 def materiasRegistro():
     if request.method == "POST":
@@ -88,7 +65,6 @@ def materiasRegistro():
         except:
             return jsonify({"Code:": "Input error"})
 
-#probado
 @app.route('/api/registrarProfesor', methods = ['POST', 'GET'])
 def registrarProfesor(id=None):
     if request.method == "POST" and request.is_json:
@@ -105,7 +81,6 @@ def registrarProfesor(id=None):
     elif request.method == "GET" and id == None:
         return jsonify(getProfesores())
 
-#probado
 @app.route('/api/usuarios/<int:id>/search', methods = ['GET']) #este seria para cuando se este logeado
 @app.route('/api/search', methods = ['GET'])
 def busquedaPorPatron():
@@ -122,7 +97,6 @@ def busquedaPorPatron():
         except:
             return jsonify({"code": "Input error"})
 
-#probado
 @app.route('/api/maestros/<int:id>', methods = ['GET'])
 def recuperarMaestro(id):
     if request.method == "GET":
@@ -135,7 +109,6 @@ def recuperarMaestro(id):
         except:
             return jsonify({"code": "Error desconocido"})
 
-#probado
 @app.route('/api/usuarios/<int:id_usuario>/maestros/<int:id_maestro>/comentarios', methods = ['POST'])
 def realizarComentario(id_usuario, id_maestro):
     if request.method == "POST":
@@ -167,21 +140,3 @@ def comentariosProfesor(id_maestro):
             return jsonify(comentarios)
 
     return jsonify({"code": "error consulta"})
-
-
-
-@app.route('/api/acerca.html')
-def paginaAcerca():
-    return render_template('acerca.html')               #Redireccionar a "Acerca de"
-
-@app.route('/api/contacto.html')
-def paginaContacto():
-    return render_template('contacto.html')             #Redireccionar a "Contacto"
-
-@app.route('/api/preguntas.html')
-def paginaPreguntas():
-    return render_template('preguntas.html')            #Redireccionar a "Preguntas"
-
-@app.route('/api/infowiki.html')
-def paginaInfo():
-    return render_template('infowiki.html')             #Redireccionar a "Info wiki"
