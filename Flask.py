@@ -43,7 +43,7 @@ def login():
             if ok:
                 return jsonify({"code": "ok", "id": id})
             else:
-                return jsonify({"code": "noexiste"})
+                return jsonify({"code": "credenciales invalidas"})
         except:
             return jsonify({"code": "error"})
 

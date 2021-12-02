@@ -36,8 +36,7 @@ def iniciarSesionUsuario(correo, contra):
     id = cursor.fetchone()                            
     if id:                                            #Inicio de sesion del usuario mediante correo y contraseña
         return id[0], True                  
-    else:
-        return None, False
+    return None, False
 
 def add_evaluar_maestro(evaluación): #Pusiste en el codigo SQL el acento?
     Promedio_conocimiento = evaluación['conocimiento']
