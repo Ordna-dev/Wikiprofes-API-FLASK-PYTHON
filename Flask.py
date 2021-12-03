@@ -14,7 +14,7 @@ def paginaInicio():
     # return render_template('/api/index.html')           #Redireccionar a la vista principal del proyecto
 
 #probado
-@app.route('/api/signin', methods = ["GET", "POST"])
+@app.route('/api/registro', methods = ["GET", "POST"])
 def registrar():
     if request.method == "GET":
         return render_template('registro.html')
@@ -27,8 +27,10 @@ def registrar():
             keyConfirm = data["repass"]
             if key == keyConfirm:
                 if crearUsuario(nombreUsuario, correo, key) == False:
-                    return jsonify({"code": "singin error"})
+                    return jsonify({"code": "correo electronico ya usado"})
                 return jsonify({"code" : "Ok"})
+            else:
+                return jsonify({"code" : "no matching key"})
         except:
             return jsonify({"Code:": "Input error"})
 
@@ -39,9 +41,11 @@ def login():
             data = request.get_json()
             correo = data['correo_electronico']
             contra = data['acces_key']
-            id, ok = iniciarSesionUsuario(correo, contra)
+            id_usuario, ok = iniciarSesionUsuario(correo, contra)
+            if correo == "" or contra == "":
+                return jsonify({"code": "No has puesto tu correo o contrasena"})
             if ok:
-                return jsonify({"code": "ok", "id": id})
+                return jsonify({"code": "ok", "id": id_usuario})
             else:
                 return jsonify({"code": "credenciales invalidas"})
         except:
@@ -59,7 +63,9 @@ def materiasRegistro():
             data = request.get_json()
             claveMateria = data["claveMateria"]
             nombre = data["nombre"] 
-            if registrarMateria(claveMateria, nombre) == False:
+            if nombre == "" or claveMateria == "":
+                return jsonify({"code":"credenciales vacias"})
+            elif registrarMateria(claveMateria, nombre) == False:
                 return jsonify({"code" : "Registrar error"})
             return jsonify({"code" : "Ok"})
         except:
@@ -72,9 +78,10 @@ def registrarProfesor(id=None):
             data = request.get_json() 
             nombre = data['nombre'] 
             apellidos = data['apellidos'] 
-            if crearProfesor(nombre, apellidos) == False:
-                return jsonify({"code" : "Insersión error"})
-            return jsonify({"code": "Ok"})
+            centro_universitario = data['centro_universitario']
+            if crearProfesor(nombre, apellidos, centro_universitario) == False:
+                return jsonify({"code" : "Error de insercion"})
+            return jsonify({"code": "Profesor registrado"})
         except:
             return jsonify({"code" : "Input error"})
 
@@ -92,8 +99,10 @@ def busquedaPorPatron():
             maestros = buscarProfesor(patron)
             if maestros:
                 return jsonify(maestros)
+            elif buscarProfesor(patron) == "Los digitos, simbolos y el texto vacio no son validos":
+                return jsonify({"result": "Los digitos, simbolos y el texto vacio no son validos"})
             else:
-                return jsonify({"result": "sin coincidencia"})
+                return jsonify({"result": "sin coincidencias"})
         except:
             return jsonify({"code": "Input error"})
 
@@ -117,6 +126,8 @@ def realizarComentario(id_usuario, id_maestro):
             anonimo = data['anonimo']
             comentario = data['comentario']
             id_materia = data['id_materia']
+            if comentario == "" or id_materia == "" or anonimo == "":
+                return jsonify({"code": "campos vacios"})
             caso, resultado = insertarComentario(id_usuario, id_maestro, anonimo, comentario, id_materia)
             if caso == None and resultado == True:
                 return jsonify({"code":"ok"})
@@ -130,13 +141,17 @@ def realizarComentario(id_usuario, id_maestro):
         except:
             return jsonify({"code":"input error"})
 
-@app.route('/api/maestros/<int:id>/comentarios', methods = ['GET'])
+@app.route('/api/maestros/<int:id_maestro>/comentarios', methods = ['GET'])
 def comentariosProfesor(id_maestro):
     if request.method == "GET":
+        print()
         comentarios = consultarComentarios(id_maestro)
         if comentarios: 
-            nombre_materia = consultarMateria(comentarios["id_materia"])
-            comentarios["nombre_materia"] = nombre_materia
+            for n in range(len(comentarios)):
+                if comentarios[n]["anonimo"] == True:
+                    comentarios[n]["id_usuario"] = "";
+                nombre_materia = consultarMateria(comentarios[n]["id_materia"])
+                comentarios[n]["nombre_materia"] = nombre_materia
             return jsonify(comentarios)
 
     return jsonify({"code": "error consulta"})

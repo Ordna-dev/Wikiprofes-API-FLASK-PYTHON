@@ -1,5 +1,11 @@
 from conexionBaseDatos import cursor, bd
 
+def contieneDigitos(inputString):
+    return any(char.isdigit() for char in inputString)
+
+def contieneSimbolos(text: str) -> bool:
+    return any(c for c in text if not c.isalnum() and not c.isspace())
+
 def existeProfesor(nombre, apellidos):
     query = "SELECT COUNT(*) FROM maestro.maestros WHERE nombre = %s AND apellidos = %s"
     cursor.execute(query, (nombre, apellidos))
@@ -8,12 +14,18 @@ def existeProfesor(nombre, apellidos):
     else:
         return False
 
-def crearProfesor(nombre, apellidos):
+def crearProfesor(centro, nombre, apellidos):
    if existeProfesor(nombre, apellidos) == True:
        return False
    else:
+        if contieneDigitos(centro) or contieneDigitos(nombre) or contieneDigitos(apellidos):
+            return False
+        elif contieneSimbolos(centro) or contieneSimbolos(nombre) or contieneSimbolos(apellidos):
+            return False
+        elif centro == "" or nombre == "" or apellidos == "":
+            return False
         insertar = "INSERT INTO maestro.maestros (promedio_conocimiento, promedio_puntualidad, promedio_dificultad, numero_evaluaciones, centro_universitario, nombre, apellidos, id_usuario) VALUES(%s, %s, %s, %s, %s, %s, %s, %s)"
-        cursor.execute(insertar, (None, None, None, '0', 'CUCEI', nombre, apellidos, None))
+        cursor.execute(insertar, (None, None, None, '0', centro, nombre, apellidos, None))
         bd.commit() 
         if cursor.rowcount:
             return True
@@ -37,6 +49,12 @@ def getProfesores():
      return maestros
 
 def buscarProfesor(patron):
+    if contieneDigitos(patron):
+        return "Los digitos, simbolos y el texto vacio no son validos"
+    elif contieneSimbolos(patron):
+        return "Los digitos, simbolos y el texto vacio no son validos"
+    elif patron == "":
+        return "Los digitos, simbolos y el texto vacio no son validos"
     query = "SELECT * FROM maestro.maestros WHERE nombre || ' ' || apellidos LIKE %s"
     cursor.execute(query, ('%'+patron+'%',))
     maestros = []
@@ -71,44 +89,3 @@ def consultarMaestro(id):
         }
         maestros.append(maestro)
     return maestros
-
-
-# def iniciarSesionProfesor(correo, contra):
-#     h = hashlib.new("sha256", bytes(contra, "utf-8"))
-#     h = h.hexdigest()
-#     query = "SELECT id FROM maestro WHERE correo = %s AND user_key = %s"
-#     cursor.execute(query, (correo, h))
-#     consulta = cursor.fetchone()                            #Inicio de sesion del profesor(usuario) mediante correo y contraseña
-#     if consulta:                                            #Esta parte del codigo no es necesaria?
-#         maestro = {
-#             'Id' : consulta[0],
-#             'Nombre(s)' : consulta[1],
-#             'Apellido(s)' : consulta[2],
-#             'Correo' : consulta[3]
-#         }
-#         return maestro
-
-#     else:
-#         return False
-
-
-
-# def modificar_profesor(id, columna, valor):
-#     update = f"UPDATE maestro SET {columna} = %s WHERE id = %s"
-#     cursor.execute(update, (valor, id))
-#     bd.commit()
-
-#     if cursor.rowcount:                                 #Modificar la informacion del profesor por si hubo algun error
-#         return True
-#     else: 
-#         return False
-
-# def eliminar_profesor(id):
-#     eliminar = "DELETE from maestro WHERE id = %s"
-#     cursor.execute(eliminar, (id,))
-#     bd.commit()
-
-#     if cursor.rowcount:                                 #Eliminar profesor(no usuario) de la base de datos por si hubo algun error
-#         return True
-#     else:
-#         return False

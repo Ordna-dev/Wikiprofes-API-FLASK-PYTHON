@@ -38,15 +38,14 @@ def consultarComentarios(id_maestro):
     query = "SELECT * FROM maestro.comentarios WHERE id_maestro = %s"
     cursor.execute(query, (id_maestro,))
     comentarios = []
-    if cursor.fetchone()[0] == 1:
-        for row in cursor.fetchall():
-            comentario = {
-                'fecha': row[1],                           #Obtener informacion de todos los profesores registrados.
-                'anonimo': row[2],  
-                'comentario': row[6],
-                'id_materia': row[7]
-            }
-            comentarios.append(comentario)
-    print(comentarios)
+    for row in cursor.fetchall():
+        comentario = {
+            'fecha': row[0],                           #Obtener informacion de todos los profesores registrados.
+            'anonimo': row[1],
+            'id_usuario': row[2],  
+            'comentario': row[5],
+            'id_materia': row[6]
+        }
+        comentarios.append(comentario)
     return comentarios
 

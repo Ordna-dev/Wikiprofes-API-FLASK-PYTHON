@@ -14,6 +14,9 @@ def existeUsuario(correo):
 def crearUsuario(nombreUsuario, correo, key):
     if existeUsuario(correo) == True:
         return False
+    
+    elif nombreUsuario == "" or correo == "" or key == "":
+        return False
     else:
         h = hashlib.new("sha256", bytes(key, "utf-8"))   #A compilarlo a ver si jala
         h = h.hexdigest()
@@ -34,14 +37,14 @@ def iniciarSesionUsuario(correo, contra):
     query = "SELECT id_usuario FROM usuario.usuarios WHERE correo_electronico = %s AND acces_key = %s"
     cursor.execute(query, (correo, h))
     id = cursor.fetchone()                            
-    if id:                                            #Inicio de sesion del usuario mediante correo y contraseña
+    if id:                                            
         return id[0], True                  
     return None, False
 
-def add_evaluar_maestro(evaluación): #Pusiste en el codigo SQL el acento?
+def add_evaluar_maestro(evaluación): 
     Promedio_conocimiento = evaluación['conocimiento']
     Promedio_puntualidad = evaluación['puntualidad']
-    Promedio_dificultad = evaluación['dificultad']         #Evaluación del profesor    
+    Promedio_dificultad = evaluación['dificultad']           
                                                            
     insertar = "INSERT INTO evaluación \
         (conocimiento, puntualidad, dificultad) \

@@ -23,12 +23,9 @@ def registrarMateria(claveMateria, nombre):
             return 
 
 def consultarMateria(id_materia):
-    query = "SELECT nombre FROM materia.materias WHERE id = %s VALUES (%s)"
+    query = "SELECT nombre FROM materia.materias WHERE id_materia = %s"
     cursor.execute(query, (id_materia, ))
-    materias = []
+    materia = None
     for row in cursor.fetchall():
-        materia = {
-        'nombre': row[1],
-        }
-        materias.append(materia)
-    return materias
+        materia = row[0]
+    return materia
